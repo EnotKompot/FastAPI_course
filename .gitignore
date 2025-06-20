@@ -1,2 +1,6 @@
-/venv/
-/preparing_to_course/
+venv_desktop
+venv_laptop
+preparing_to_course
+.idea
+__pycache__
+.env
