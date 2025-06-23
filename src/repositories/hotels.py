@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, insert
 
 from src.models.hotels import HotelsORM
 from src.repositories.base import BaseRepository
@@ -32,4 +32,4 @@ class HotelsRepository(BaseRepository):
             .offset(offset)
         )
         result = await self.session.execute(query)
-        return result.scalars().all()
+        return result

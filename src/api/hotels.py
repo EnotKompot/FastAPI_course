@@ -64,14 +64,10 @@ async def add_hotel(hotel_data: HotelSchema = Body(openapi_examples={
 })
 ):
     async with new_session() as session:
-        add_hotel_stmt = (
-            insert(HotelsORM)
-            .values(**hotel_data.model_dump())
-        )
-        await session.execute(add_hotel_stmt)
+        hotel = await HotelsRepository(session).add(hotel_data)
         await session.commit()
 
-    return {"success": True, "message": "Hotel added successfully"}
+    return {"success": True, "data": hotel}
 
 
 @router.put(
