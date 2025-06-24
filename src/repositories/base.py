@@ -22,6 +22,12 @@ class BaseRepository:
         return result.scalars().one_or_none()
 
 
+    async def get_direct(self, **filter_by):
+        query = select(self.model).filter_by(**filter_by)
+        result = await self.session.execute(query)
+        return result.scalars().one()
+
+
     async def add(self, data: BaseModel):
         add_stmt = (
             insert(self.model)
@@ -41,9 +47,13 @@ class BaseRepository:
         )
         await self.session.execute(upd_stmt)
 
+    async def update_particular(self, data: BaseModel, **filter_by):
+        pass
+
 
     async def delete(self, **filter_by) -> None:
-        del_stmt = select(self.model).filter_by(**filter_by)
-        for_delete = await self.session.execute(del_stmt)
-        for record in for_delete.scalars().all():
-            await self.session.delete(record)
+        delete_stmt = (
+            delete(self.model)
+            .filter_by(**filter_by)
+        )
+        await self.session.execute(delete_stmt)

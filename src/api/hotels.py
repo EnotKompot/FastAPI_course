@@ -34,15 +34,21 @@ async def get_hotel(
         )
 
 
+@router.get("/{hotel_id}")
+async def get_hotel(hotel_id: int):
+    async with new_session() as session:
+        await HotelsRepository(session).get_direct(id=hotel_id)
+        await session.commit()
+
 @router.delete(
     "/{hotel_id}",
     summary="Удаляет запись об отеле",
 )
 async def del_hotel(
-        id: int
+        hotel_id: int
 ):
     async with new_session() as session:
-        await HotelsRepository(session).delete(id=id)
+        await HotelsRepository(session).delete(id=hotel_id)
         await session.commit()
 
 
