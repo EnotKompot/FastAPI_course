@@ -1,12 +1,9 @@
 from fastapi import Query, APIRouter, Body
 
-from sqlalchemy import insert, select
-
-from src.models.hotels import HotelsORM
 from src.repositories.hotels import HotelsRepository
 from src.database import new_session, engine
 from src.api.dependencies import PaginationDep
-from src.schemas.hotels import HotelSchema, HotelPATCHSchema
+from src.schemas.hotels import HotelAddSchema, HotelPATCHSchema
 
 router = APIRouter(
     prefix="/hotels",
@@ -37,8 +34,9 @@ async def get_hotel(
 @router.get("/{hotel_id}")
 async def get_hotel(hotel_id: int):
     async with new_session() as session:
-        await HotelsRepository(session).get_direct(id=hotel_id)
+        result = await HotelsRepository(session).get_one_or_none(id=hotel_id)
         await session.commit()
+    return result
 
 @router.delete(
     "/{hotel_id}",
@@ -56,7 +54,7 @@ async def del_hotel(
     "",
     summary="Создает запись о новом отеле",
 )
-async def add_hotel(hotel_data: HotelSchema = Body(openapi_examples={
+async def add_hotel(hotel_data: HotelAddSchema = Body(openapi_examples={
     "1": {"summary": "Сочи", "value":{
         "title": "Отель 5 звезд у моря",
         "location": "Сочи, ул. Морская, 7"
@@ -78,7 +76,7 @@ async def add_hotel(hotel_data: HotelSchema = Body(openapi_examples={
     "/{hotel_id}",
     summary="Редактирует все данные в записи отеля",
 )
-async def update_hotel(hotel_id: int, hotel_data: HotelSchema):
+async def update_hotel(hotel_id: int, hotel_data: HotelAddSchema):
     async with new_session() as session:
         await HotelsRepository(session).update(data=hotel_data,
                                                id=hotel_id)
@@ -90,16 +88,15 @@ async def update_hotel(hotel_id: int, hotel_data: HotelSchema):
     "/{hotel_id}",
     summary="Редактирует часть данных в записи отеля",
 )
-def patch_hotel(
+async def patch_hotel(
         hotel_id: int,
         hotel_data: HotelPATCHSchema
 ):
-    global hotels
-
-    for hotel in hotels:
-        if hotel['id'] == hotel_id:
-            if hotel_data.title:
-                hotel["title"] = hotel_data.title
-            if hotel_data.name:
-                hotel["name"] = hotel_data.name
+    async with new_session() as session:
+        await HotelsRepository(session).update_particular(
+            data=hotel_data,
+            exclude_unset=True,
+            id=hotel_id
+        )
+        await session.commit()
     return {"success": True, "message": "Hotel updated successfully"}

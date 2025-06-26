@@ -3,8 +3,10 @@ from pydantic import BaseModel
 from sqlalchemy import select, insert, update
 
 
+
 class BaseRepository:
     model = None
+    schema = BaseModel
 
     def __init__(self, session):
         self.session = session
@@ -13,29 +15,16 @@ class BaseRepository:
     async def get_all(self, *args, **kwargs):
         query = select(self.model)
         result = await self.session.execute(query)
-        return result.scalars().all()
+        return [self.schema.model_validate(model, from_attributes=True) for model in result.scalars().all()]
 
 
     async def get_one_or_none(self, **filter_by):
         query = select(self.model).filter_by(**filter_by)
         result = await self.session.execute(query)
-        return result.scalars().one_or_none()
-
-
-    async def get_direct(self, **filter_by):
-        query = select(self.model).filter_by(**filter_by)
-        result = await self.session.execute(query)
-        return result.scalars().one()
-
-
-    async def add(self, data: BaseModel):
-        add_stmt = (
-            insert(self.model)
-            .values(**data.model_dump())
-            .returning(self.model)  # Возвращает добавленный объект в виде pydantic - схемы
-        )
-        result = await self.session.execute(add_stmt)
-        return result.scalars().one()
+        model = result.scalars().one_or_none()
+        if model is None:
+            return model
+        return self.schema.model_validate(model, from_attributes=True)
 
 
     async def update(self, data: BaseModel, **filter_by) -> None:
@@ -47,13 +36,28 @@ class BaseRepository:
         )
         await self.session.execute(upd_stmt)
 
-    async def update_particular(self, data: BaseModel, **filter_by):
-        pass
+    async def add(self, data: BaseModel):
+        add_stmt = (
+            insert(self.model)
+            .values(**data.model_dump())
+            .returning(self.model)  # Возвращает добавленный объект в виде pydantic - схемы
+        )
+        result = await self.session.execute(add_stmt)
+        model = result.scalars().one()
+        return self.schema.model_validate(model, from_attributes=True)
+
+
+    async def update_particular(self, data: BaseModel, exclude_unset: bool = False, **filter_by):
+        upd_stmt = (
+            update(self.model)
+            .filter_by(**filter_by)
+            .values(**data.model_dump(exclude_unset=exclude_unset))
+        )
+        await self.session.execute(upd_stmt)
 
 
     async def delete(self, **filter_by) -> None:
-        delete_stmt = (
-            delete(self.model)
-            .filter_by(**filter_by)
-        )
-        await self.session.execute(delete_stmt)
+        del_stmt = select(self.model).filter_by(**filter_by)
+        for_delete = await self.session.execute(del_stmt)
+        for record in for_delete.scalars().all():
+            await self.session.delete(record)

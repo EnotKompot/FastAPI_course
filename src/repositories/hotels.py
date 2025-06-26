@@ -1,11 +1,12 @@
-from sqlalchemy import select, insert
+from sqlalchemy import select
 
 from src.models.hotels import HotelsORM
 from src.repositories.base import BaseRepository
-
+from src.schemas.hotels import HotelSchema
 
 class HotelsRepository(BaseRepository):
     model = HotelsORM
+    schema = HotelSchema
 
     async def get_all(
             self,
@@ -32,4 +33,4 @@ class HotelsRepository(BaseRepository):
             .offset(offset)
         )
         result = await self.session.execute(query)
-        return result
+        return [HotelSchema.model_validate(hotel, from_attributes=True) for hotel in result.scalars().all()]
