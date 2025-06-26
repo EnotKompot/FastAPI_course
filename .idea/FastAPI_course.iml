@@ -10,7 +10,7 @@
       <excludeFolder url="file://$MODULE_DIR$/laptop-venv" />
       <excludeFolder url="file://$MODULE_DIR$/venv-laptop" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.12 (FastAPI_course_laptop)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.12 (FastAPI_course)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

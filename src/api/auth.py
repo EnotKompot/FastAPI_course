@@ -1,9 +1,9 @@
-from fastapi import APIRouter
-from passlib.context import CryptContext
+from fastapi import APIRouter, HTTPException
+
 
 from src.database import new_session
 from src.repositories.auth import UsersRepository
-from src.schemas.auth import UserAdd, UserRequestAdd
+from src.schemas.auth import UserRequestAdd
 
 router = APIRouter(
     prefix='/auth',
@@ -11,22 +11,15 @@ router = APIRouter(
 )
 
 
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated='auto')
-
-
 @router.post('/register')
 async def registry_user(
         data: UserRequestAdd
 ):
-    hashed_password = pwd_context.hash(data.password)
-    new_user_data = UserAdd(
-        email=data.email,
-        hashed_password=hashed_password,
-        nickname=data.nickname
-    )
-    async with new_session() as session:
-        await UsersRepository(session).add(new_user_data)
-        await session.commit()
 
-    return {"success": True}
+    async with new_session() as session:
+        if await UsersRepository(session).user_exists(email=data.email) is True:
+            raise HTTPException(status_code=422, detail='User already exists')
+        else:
+            await UsersRepository(session).add(data)
+            await session.commit()
+            return {"success": True}

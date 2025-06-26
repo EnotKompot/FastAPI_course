@@ -38,6 +38,7 @@ async def get_hotel(hotel_id: int):
         await session.commit()
     return result
 
+
 @router.delete(
     "/{hotel_id}",
     summary="Удаляет запись об отеле",

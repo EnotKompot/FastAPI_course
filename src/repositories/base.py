@@ -1,6 +1,5 @@
-from httpx import delete
 from pydantic import BaseModel
-from sqlalchemy import select, insert, update
+from sqlalchemy import select, insert, update, delete
 
 
 
@@ -57,7 +56,8 @@ class BaseRepository:
 
 
     async def delete(self, **filter_by) -> None:
-        del_stmt = select(self.model).filter_by(**filter_by)
-        for_delete = await self.session.execute(del_stmt)
-        for record in for_delete.scalars().all():
-            await self.session.delete(record)
+        delete_stmt = (
+            delete(self.model)
+            .filter_by(**filter_by)
+        )
+        await self.session.execute(delete_stmt)
