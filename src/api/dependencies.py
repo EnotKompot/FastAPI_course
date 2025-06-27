@@ -1,6 +1,6 @@
 from typing import Annotated
 from fastapi import Depends
-from passlib.context import CryptContext
+
 from pydantic import BaseModel, Field
 
 
@@ -11,4 +11,3 @@ class PaginationParams(BaseModel):
 
 PaginationDep = Annotated[PaginationParams, Depends()]
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated='auto')
