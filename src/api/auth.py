@@ -52,7 +52,7 @@ async def get_me(
     return user
 
 
-@router.get("/logout")
+@router.post("/logout") # Used to keep cache clear of user sensetive data
 async def logout_user(
         response: Response,
 ):
