@@ -1,5 +1,5 @@
 from datetime import datetime, timezone, timedelta
-
+from fastapi import HTTPException
 import jwt
 from passlib.context import CryptContext
 
@@ -23,3 +23,13 @@ class AuthService:
 
     def hash_password(self, password: str) -> str:
         return self.pwd_context.hash(password)
+
+    def encode_token(self, token: str) -> dict:
+        try:
+            return jwt.decode(
+                token,
+                settings.JWT_SECRET_KEY,
+                algorithms=settings.JWT_ALGORITHM
+            )
+        except jwt.exceptions.DecodeError:
+            raise HTTPException(status_code=401, detail='Token is invalid')
