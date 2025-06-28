@@ -50,3 +50,12 @@ async def get_me(
     async with new_session() as session:
         user = await UsersRepository(session).get_one_or_none(id=user_id)
     return user
+
+
+@router.get("/logout")
+async def logout_user(
+        response: Response,
+):
+    response.delete_cookie("access_token")  # Unsensetive for invalid token value
+
+    return {"success": True, "message": "Logged out"}
