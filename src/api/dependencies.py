@@ -16,7 +16,6 @@ PaginationDep = Annotated[PaginationParams, Depends()]
 def get_token(request: Request) -> str:
     token = request.cookies.get('access_token')
     if not token:
-        from fastapi import HTTPException
         raise HTTPException(status_code=401, detail="You are not authenticated. Provide token.")
     return token
 
