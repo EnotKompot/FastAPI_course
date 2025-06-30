@@ -1,10 +1,10 @@
 from sqlalchemy import select
 from fastapi import HTTPException
 
-from src.repositories.hotels import HotelsRepository
 from src.schemas.rooms import RoomSchema, RoomPATCHSchema
 from src.models.rooms import RoomsORM
 from src.repositories.base import BaseRepository
+from src.repositories.hotels import HotelsRepository
 
 
 class RoomsRepository(BaseRepository):

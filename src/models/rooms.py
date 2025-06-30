@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import ForeignKey
 
-from utils.database import BaseModel
+from src.utils.database import BaseModel
 
 
 class RoomsORM(BaseModel):

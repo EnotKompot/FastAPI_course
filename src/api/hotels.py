@@ -1,7 +1,5 @@
 from fastapi import Query, APIRouter, Body
 
-from src.repositories.hotels import HotelsRepository
-from utils.database import new_session
 from src.api.dependencies import PaginationDep, DBDep
 from src.schemas.hotels import HotelAddSchema, HotelPATCHSchema
 
@@ -35,11 +33,12 @@ async def get_hotels(
     "/{hotel_id}",
     summary="Редактирует все данные в записи отеля",
 )
-async def update_hotel(hotel_id: int, hotel_data: HotelAddSchema):
-    async with new_session() as session:
-        await HotelsRepository(session).update(data=hotel_data,
-                                               id=hotel_id)
-        await session.commit()
+async def update_hotel(
+        hotel_id: int,
+        hotel_data: HotelAddSchema,
+        db: DBDep
+):
+    await db.hotels.update(data=hotel_data, id=hotel_id)
     return {"success": True, "message": "Hotel updated successfully"}
 
 
@@ -49,15 +48,14 @@ async def update_hotel(hotel_id: int, hotel_data: HotelAddSchema):
 )
 async def patch_hotel(
         hotel_id: int,
-        hotel_data: HotelPATCHSchema
+        hotel_data: HotelPATCHSchema,
+        db: DBDep
 ):
-    async with new_session() as session:
-        await HotelsRepository(session).update_particular(
-            data=hotel_data,
-            exclude_unset=True,
-            id=hotel_id
-        )
-        await session.commit()
+    await db.hotels.update_particular(
+        data=hotel_data,
+        exclude_unset=True,
+        id=hotel_id
+    )
     return {"success": True, "message": "Hotel updated successfully"}
 
 
@@ -79,7 +77,6 @@ async def add_hotel(
         }),
 ):
     hotel = await db.hotels.add(hotel_data)
-
     return {"success": True, "data": hotel}
 
 
