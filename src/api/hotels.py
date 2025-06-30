@@ -29,34 +29,15 @@ async def get_hotels(
     )
 
 
-@router.put(
+@router.get(
     "/{hotel_id}",
-    summary="Редактирует все данные в записи отеля",
+    summary = "Возвращает запись о конкретном отеле",
 )
-async def update_hotel(
+async def get_hotel(
         hotel_id: int,
-        hotel_data: HotelAddSchema,
-        db: DBDep
+        db: DBDep,
 ):
-    await db.hotels.update(data=hotel_data, id=hotel_id)
-    return {"success": True, "message": "Hotel updated successfully"}
-
-
-@router.patch(
-    "/{hotel_id}",
-    summary="Редактирует часть данных в записи отеля",
-)
-async def patch_hotel(
-        hotel_id: int,
-        hotel_data: HotelPATCHSchema,
-        db: DBDep
-):
-    await db.hotels.update_particular(
-        data=hotel_data,
-        exclude_unset=True,
-        id=hotel_id
-    )
-    return {"success": True, "message": "Hotel updated successfully"}
+    return await db.hotels.get_one_or_none(id=hotel_id)
 
 
 @router.post(
@@ -77,18 +58,36 @@ async def add_hotel(
         }),
 ):
     hotel = await db.hotels.add(hotel_data)
+    await db.commit()
     return {"success": True, "data": hotel}
 
 
-@router.get(
+@router.put(
     "/{hotel_id}",
-    summary = "Возвращает запись о конкретном отеле",
+    summary="Редактирует все данные в записи отеля",
 )
-async def get_hotel(
+async def update_hotel(
         hotel_id: int,
-        db: DBDep,
+        hotel_data: HotelAddSchema,
+        db: DBDep
 ):
-    return await db.hotels.get_one_or_none(id=hotel_id)
+    await db.hotels.update(data=hotel_data, id=hotel_id)
+    await db.commit()
+    return {"success": True, "message": "Hotel updated successfully"}
+
+
+@router.patch(
+    "/{hotel_id}",
+    summary="Редактирует часть данных в записи отеля",
+)
+async def patch_hotel(
+        hotel_id: int,
+        hotel_data: HotelPATCHSchema,
+        db: DBDep
+):
+    await db.hotels.update_particular(data=hotel_data, exclude_unset=True, id=hotel_id)
+    await db.commit()
+    return {"success": True, "message": "Hotel updated successfully"}
 
 
 @router.delete(
@@ -100,4 +99,5 @@ async def del_hotel(
         db: DBDep,
 ):
     await db.hotels.delete(id=hotel_id)
+    await db.commit()
     return {"success": True}

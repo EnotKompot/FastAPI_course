@@ -21,35 +21,6 @@ class RoomsRepository(BaseRepository):
             raise HTTPException(status_code=404, detail=f"Hotel ID not found")
 
 
-    async def get_all(
-            self,
-            hotel_id: int,
-            title: str,
-            description: str,
-            limit: int,
-            offset: int,
-    ):
-        await self.is_hotel_exist(hotel_id)
-        query = select(RoomsORM).where(RoomsORM.hotel_id == hotel_id)
-        if title:
-            query = query.where(RoomsORM.title == title)
-        if description:
-            query = query.where(RoomsORM.description == description)
-
-        query = (
-            query
-            .limit(limit)
-            .offset(offset)
-        )
-        result = await self.session.execute(query)
-        return [RoomSchema.model_validate(room, from_attributes=True) for room in result.scalars().all()]
-
-
-    async def get_one_or_none(self, **filter_by):
-        await self.is_hotel_exist(filter_by.get("hotel_id"))
-        return await super().get_one_or_none(**filter_by)
-
-
     async def add(self, data):
         await self.is_hotel_exist(data.hotel_id)
         return await super().add(data)

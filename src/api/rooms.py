@@ -3,7 +3,10 @@ from fastapi import APIRouter, HTTPException, Query, Body
 from src.api.dependencies import PaginationDep, DBDep
 from src.schemas.rooms import RoomAddSchema, RoomPATCHSchema
 
-router = APIRouter(prefix="/hotels", tags=["Номера  "])
+router = APIRouter(
+    prefix="/hotels",
+    tags=["Номера"]
+)
 
 
 
@@ -36,7 +39,6 @@ async def get_room(
         db: DBDep,
 ):
     query = await db.rooms.get_one_or_none(
-        hotel_id=hotel_id,
         id=room_id
     )
 
@@ -45,7 +47,7 @@ async def get_room(
     return query
 
 
-@router.post("/{hotel_id}/rooms/{room_id}")
+@router.post("/{hotel_id}/rooms/")
 async def add_room(
         db: DBDep,
         room: RoomAddSchema = Body(openapi_examples={
@@ -66,6 +68,7 @@ async def add_room(
         })
 ):
     room = await db.rooms.add(room)
+    await db.commit()
     return {"success": True, "data": room}
 
 
@@ -79,6 +82,7 @@ async def delete_room(
         hotel_id=hotel_id,
         room_id=room_id
     )
+    await db.commit()
     return {"success": True}
 
 
@@ -94,6 +98,7 @@ async def update_room(
         hotel_id=hotel_id,
         id=room_id,
     )
+    await db.commit()
     return {"success": True}
 
 
@@ -111,4 +116,5 @@ async def patch_room(
         id=room_id,
         data=room_data
     )
+    await db.commit()
     return {"success": True}

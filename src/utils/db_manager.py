@@ -1,6 +1,7 @@
 from src.repositories.auth import UsersRepository
 from src.repositories.hotels import HotelsRepository
 from src.repositories.rooms import RoomsRepository
+from src.repositories.bookings import BookingsRepository
 
 
 class DBManager:
@@ -14,6 +15,7 @@ class DBManager:
         self.hotels = HotelsRepository(self.session)
         self.rooms = RoomsRepository(self.session)
         self.users = UsersRepository(self.session)
+        self.bookings = BookingsRepository(self.session)
 
         return self
 

@@ -19,6 +19,7 @@ async def registry_user(
         raise HTTPException(status_code=409, detail=f'User with email {data.email} already exists. Use another email.')
 
     await db.users.add(data)
+    await db.commit()
     return {"success": True}
 
 
@@ -52,5 +53,4 @@ async def logout_user(
         response: Response,
 ):
     response.delete_cookie("access_token")  # Unsensetive for invalid token value
-
     return {"success": True, "message": "Logged out"}
