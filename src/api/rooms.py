@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, HTTPException, Query, Body
 
 from src.api.dependencies import PaginationDep, DBDep
@@ -12,23 +14,23 @@ router = APIRouter(
 
 @router.get("/{hotel_id}/rooms")
 async def get_rooms(
-        pagination: PaginationDep,
+        # pagination: PaginationDep,
         db: DBDep,
         hotel_id: int,
-        title: str | None = Query(default=None, description="Название номера"),
-        description: str | None = Query(default=None, description="Описание номера"),
+        date_from: date = Query(example="2025-06-14"),
+        date_to: date = Query(example="2025-06-19"),
 ):
-    per_page = pagination.per_page or 10
-    query = await db.rooms.get_all(
+    # per_page = pagination.per_page or 10
+    query = await db.rooms.get_filtered_by_time(
         hotel_id=hotel_id,
-        title=title,
-        description=description,
-        limit=per_page,
-        offset=per_page * (pagination.page - 1)
+        date_from=date_from,
+        date_to=date_to,
+        # limit=per_page,
+        # offset=per_page * (pagination.page - 1)
     )
 
-    if len(query) == 0:
-        raise HTTPException(status_code=404, detail=f"Hotel with id {hotel_id} has no rooms")
+    # if len(query) == 0:
+    #     raise HTTPException(status_code=404, detail=f"Hotel with id {hotel_id} has no rooms")
     return query
 
 

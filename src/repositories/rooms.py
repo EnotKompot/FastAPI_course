@@ -1,6 +1,8 @@
-from sqlalchemy import select
+from datetime import date
+
 from fastapi import HTTPException
 
+from src.repositories.utils import rooms_ids_for_booking
 from src.schemas.rooms import RoomSchema, RoomPATCHSchema
 from src.models.rooms import RoomsORM
 from src.repositories.base import BaseRepository
@@ -19,6 +21,20 @@ class RoomsRepository(BaseRepository):
         result = await HotelsRepository(self.session).get_one_or_none(id=hotel_id)
         if not result:
             raise HTTPException(status_code=404, detail=f"Hotel ID not found")
+
+    async def get_filtered_by_time(
+            self,
+            hotel_id: int,
+            date_from: date,
+            date_to: date
+    ):
+        awailable_rooms = rooms_ids_for_booking(
+            hotel_id=hotel_id,
+            date_from=date_from,
+            date_to=date_to
+        )
+        return await self.get_all_filtered(RoomsORM.id.in_(awailable_rooms))
+
 
 
     async def add(self, data):
