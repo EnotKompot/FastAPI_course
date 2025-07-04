@@ -19,13 +19,17 @@ router = APIRouter(
 async def get_hotels(
         pagination: PaginationDep,
         db: DBDep,
+        title: str = None,
+        location: str = None,
         date_from: date = Query(example="2025-06-14"),
         date_to: date = Query(example="2025-06-19"),
 ):
     per_page = pagination.per_page or 5
     return await db.hotels.get_filtered_by_time(
-        limit=per_page + 1,
-        offset=per_page * (pagination.page - 1) + 1,
+        title=title,
+        location=location,
+        limit=per_page,
+        offset=per_page * (pagination.page - 1),
         date_from=date_from,
         date_to=date_to
     )
