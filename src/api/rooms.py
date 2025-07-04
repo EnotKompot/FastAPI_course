@@ -2,8 +2,9 @@ from datetime import date
 
 from fastapi import APIRouter, HTTPException, Query, Body
 
+from schemas.facilities import RoomFacilityAddSchema
 from src.api.dependencies import PaginationDep, DBDep
-from src.schemas.rooms import RoomAddSchema, RoomPATCHSchema
+from src.schemas.rooms import RoomAddSchema, RoomPATCHSchema, RoomAddRequestSchema
 
 router = APIRouter(
     prefix="/hotels",
@@ -51,27 +52,20 @@ async def get_room(
 
 @router.post("/{hotel_id}/rooms/")
 async def add_room(
+        hotel_id: int,
         db: DBDep,
-        room: RoomAddSchema = Body(openapi_examples={
-            "1": {"summary": "Double bed", "value":{
-                "hotel_id": 15,
-                "title": "Double bed room",
-                "description": "Просторная комната с двуспальной кроватью",
-                "price": 2000,
-                "quantity": 10
-            }},
-            "2": {"summary": "View to sea", "value":{
-                "hotel_id": 16,
-                "title": "King view to the sea",
-                "description": "Комната с панорамными окнами и видом на море",
-                "price": 5000,
-                "quantity": 15
-            }}
-        })
-):
-    room = await db.rooms.add(room)
+        room_data: RoomAddRequestSchema,):
+    _room_data = RoomAddSchema(
+        hotel_id=hotel_id,
+        **room_data.model_dump()
+    )
+    room = await db.rooms.add(_room_data)
+
+    rooms_facilities_data = [RoomFacilityAddSchema(room_id=room.id, facility_id=f_id) for f_id in room_data.facilities_ids]
+    await db.rooms_facilities.add_bulk(rooms_facilities_data)
     await db.commit()
-    return {"success": True, "data": room}
+
+    return {"status": "OK", "data": room}
 
 
 @router.delete("/{hotel_id}/rooms/{room_id}")

@@ -1,6 +1,4 @@
-from pydantic import BaseModel, Field
-
-from schemas.rooms import RoomSchema
+from pydantic import BaseModel, ConfigDict
 
 
 class FacilityAddSchema(BaseModel):
@@ -10,6 +8,13 @@ class FacilityAddSchema(BaseModel):
 class FacilitySchema(FacilityAddSchema):
     id: int
 
+    model_config = ConfigDict(from_attributes=True)
 
-class RoomFacilitySchema(FacilitySchema, RoomSchema):
+
+class RoomFacilityAddSchema(BaseModel):
     room_id: int
+    facility_id: int
+
+
+class RoomFacilitySchema(RoomFacilityAddSchema):
+    id: int
