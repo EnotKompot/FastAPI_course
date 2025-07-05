@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Body, HTTPException
 
-from schemas.facilities import FacilitySchema, FacilityAddSchema
+from src.schemas.facilities import FacilityAddSchema
 from src.api.dependencies import DBDep
 
 router = APIRouter(

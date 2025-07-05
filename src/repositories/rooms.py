@@ -1,9 +1,11 @@
 from datetime import date
 
 from fastapi import HTTPException
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload, joinedload
 
 from src.repositories.utils import rooms_ids_for_booking
-from src.schemas.rooms import RoomSchema, RoomPatchSchema
+from src.schemas.rooms import RoomSchema, RoomPatchSchema, RoomWithRels
 from src.models.rooms import RoomsORM
 from src.repositories.base import BaseRepository
 from src.repositories.hotels import HotelsRepository
@@ -34,7 +36,27 @@ class RoomsRepository(BaseRepository):
             date_from=date_from,
             date_to=date_to
         )
-        return await self.get_all_filtered(RoomsORM.id.in_(awailable_rooms))
+
+        query = (
+            select(self.model)
+            .options(joinedload(self.model.facilities))
+            .filter(RoomsORM.id.in_(awailable_rooms))
+        )
+        result = await self.session.execute(query)
+        return [RoomWithRels.model_validate(model) for model in result.unique().scalars().all()]
+
+
+    async def get_one_or_none(self, **filter_by):
+        query = (
+            select(self.model)
+            .options(joinedload(self.model.facilities))
+            .filter_by(**filter_by)
+        )
+        result = await self.session.execute(query)
+        model = result.scalars().unique().one_or_none()
+        if model is None:
+            return model
+        return RoomWithRels.model_validate(model)
 
 
     async def add(self, data):
