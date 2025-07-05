@@ -1,6 +1,5 @@
 from pydantic import BaseModel
-from sqlalchemy import select, insert, update, delete
-
+from sqlalchemy import select, insert, update, delete, tuple_
 
 
 class BaseRepository:
@@ -34,16 +33,6 @@ class BaseRepository:
         return self.schema.model_validate(model, from_attributes=True)
 
 
-    async def update(self, data: BaseModel, **filter_by) -> None:
-        upd_stmt = (
-            update(self.model)
-            .filter_by(**filter_by)
-            .values(**data.model_dump())
-            .returning(self.model)
-        )
-        await self.session.execute(upd_stmt)
-
-
     async def add(self, data: BaseModel):
         add_stmt = (
             insert(self.model)
@@ -63,6 +52,16 @@ class BaseRepository:
         await self.session.execute(add_data_stmt)
 
 
+    async def update(self, data: BaseModel, **filter_by) -> None:
+        upd_stmt = (
+            update(self.model)
+            .filter_by(**filter_by)
+            .values(**data.model_dump())
+            .returning(self.model)
+        )
+        await self.session.execute(upd_stmt)
+
+
     async def update_particular(self, data: BaseModel, exclude_unset: bool = False, **filter_by):
         upd_stmt = (
             update(self.model)
@@ -76,5 +75,18 @@ class BaseRepository:
         delete_stmt = (
             delete(self.model)
             .filter_by(**filter_by)
+        )
+        await self.session.execute(delete_stmt)
+
+
+    async def delete_bulk(self, delete_data: list[BaseModel]):
+        keys = tuple(delete_data[0].model_dump().keys())
+
+        values_to_delete = [tuple(getattr(item, field) for field in keys) for item in delete_data]
+        where_condition = tuple_(*[getattr(self.model, field) for field in keys]).in_(values_to_delete)
+
+        delete_stmt = (
+            delete(self.model)
+            .where(where_condition)
         )
         await self.session.execute(delete_stmt)

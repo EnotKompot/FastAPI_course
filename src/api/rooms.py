@@ -1,10 +1,11 @@
 from datetime import date
 
-from fastapi import APIRouter, HTTPException, Query, Body
+from fastapi import APIRouter, HTTPException, Query
 
-from schemas.facilities import RoomFacilityAddSchema
-from src.api.dependencies import PaginationDep, DBDep
-from src.schemas.rooms import RoomAddSchema, RoomPATCHSchema, RoomAddRequestSchema
+from src.repositories.utils import update_room_facilities
+from src.schemas.facilities import RoomFacilityAddSchema
+from src.api.dependencies import DBDep
+from src.schemas.rooms import RoomAddSchema, RoomAddRequestSchema, RoomPatchRequestSchema, RoomPatchSchema
 
 router = APIRouter(
     prefix="/hotels",
@@ -41,9 +42,7 @@ async def get_room(
         room_id: int,
         db: DBDep,
 ):
-    query = await db.rooms.get_one_or_none(
-        id=room_id
-    )
+    query = await db.rooms.get_one_or_none(id=room_id)
 
     if query is None:
         raise HTTPException(status_code=404, detail=f"Hotel with id {hotel_id} has no room with id {room_id}")
@@ -54,7 +53,8 @@ async def get_room(
 async def add_room(
         hotel_id: int,
         db: DBDep,
-        room_data: RoomAddRequestSchema,):
+        room_data: RoomAddRequestSchema,
+):
     _room_data = RoomAddSchema(
         hotel_id=hotel_id,
         **room_data.model_dump()
@@ -86,31 +86,43 @@ async def delete_room(
 async def update_room(
         hotel_id: int,
         room_id: int,
-        room_data:RoomAddSchema,
+        room_data:RoomAddRequestSchema,
         db: DBDep,
 ):
-    await db.rooms.update(
-        data=room_data,
+    _room = RoomAddSchema(
+        hotel_id=hotel_id,
+        **room_data.model_dump()
+    )
+    room = await db.rooms.update(
+        data=_room,
         hotel_id=hotel_id,
         id=room_id,
     )
+    await update_room_facilities(data=room_data, room_id=room_id, db=db)
+
     await db.commit()
     return {"success": True}
-
 
 
 @router.patch("/{hotel_id}/rooms/{room_id}")
 async def patch_room(
         hotel_id: int,
         room_id: int,
-        room_data: RoomPATCHSchema,
+        room_data: RoomPatchRequestSchema,
         db: DBDep,
 ):
-    await db.rooms.update_particular(
-        exclude_unset=True,
+    _room = RoomPatchSchema(
         hotel_id=hotel_id,
         id=room_id,
-        data=room_data
+        **room_data.model_dump(exclude_unset=True)
     )
+    await db.rooms.update_particular(
+        data=_room,
+        hotel_id=hotel_id,
+        id=room_id,
+        exclude_unset=True,
+    )
+    await update_room_facilities(data=room_data, room_id=room_id, db=db)
+
     await db.commit()
     return {"success": True}

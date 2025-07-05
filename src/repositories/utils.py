@@ -2,6 +2,8 @@ from datetime import date
 
 from sqlalchemy import select, func
 
+from schemas.facilities import RoomFacilityAddSchema
+from schemas.rooms import RoomAddRequestSchema, RoomPatchRequestSchema
 from src.models.bookings import BookingsORM
 from src.models.rooms import RoomsORM
 
@@ -51,3 +53,22 @@ def rooms_ids_for_booking(
         )
     )
     return awailable_rooms
+
+
+async def update_room_facilities(
+        room_id: int,
+        data: RoomAddRequestSchema | RoomPatchRequestSchema,
+        db
+):
+    current_facilities = await db.rooms_facilities.get_all_filtered(room_id=room_id)
+    last_facilities = {facility.facility_id for facility in current_facilities}
+    new_facilities = set(data.facilities_ids)
+
+    remove_unused_facilities = [RoomFacilityAddSchema(room_id=room_id, facility_id=f_id) for f_id in
+                                last_facilities.difference(new_facilities)]
+    if remove_unused_facilities:
+        await db.rooms_facilities.delete_bulk(remove_unused_facilities)
+    add_new_facilities = [RoomFacilityAddSchema(room_id=room_id, facility_id=f_id) for f_id in
+                          new_facilities.difference(last_facilities)]
+    if add_new_facilities:
+        await db.rooms_facilities.add_bulk(add_new_facilities)

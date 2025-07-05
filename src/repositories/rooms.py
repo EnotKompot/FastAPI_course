@@ -3,7 +3,7 @@ from datetime import date
 from fastapi import HTTPException
 
 from src.repositories.utils import rooms_ids_for_booking
-from src.schemas.rooms import RoomSchema, RoomPATCHSchema
+from src.schemas.rooms import RoomSchema, RoomPatchSchema
 from src.models.rooms import RoomsORM
 from src.repositories.base import BaseRepository
 from src.repositories.hotels import HotelsRepository
@@ -22,6 +22,7 @@ class RoomsRepository(BaseRepository):
         if not result:
             raise HTTPException(status_code=404, detail=f"Hotel ID not found")
 
+
     async def get_filtered_by_time(
             self,
             hotel_id: int,
@@ -34,7 +35,6 @@ class RoomsRepository(BaseRepository):
             date_to=date_to
         )
         return await self.get_all_filtered(RoomsORM.id.in_(awailable_rooms))
-
 
 
     async def add(self, data):
@@ -52,6 +52,6 @@ class RoomsRepository(BaseRepository):
         return await super().update(data, **filter_by)
 
 
-    async def update_particular(self, data: RoomPATCHSchema, exclude_unset=False, **filter_by):
+    async def update_particular(self, data: RoomPatchSchema, exclude_unset=False, **filter_by):
         await self.is_hotel_exist(filter_by.get("hotel_id"))
         return await super().update_particular(data=data, exclude_unset=exclude_unset, **filter_by)

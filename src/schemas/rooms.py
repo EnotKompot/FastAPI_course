@@ -23,9 +23,18 @@ class RoomSchema(RoomAddSchema):
     model_config = ConfigDict(from_attributes=True)
 
 
-class RoomPATCHSchema(RoomAddSchema):
-    hotel_id: int | None = None
-    title: str | None = Field(max_length=100)
+class RoomPatchRequestSchema(BaseModel):
+    title: str | None = Field(default=None, max_length=100)
     description: str | None = Field(default=None, max_length=400)
-    price: int | None = Field(gt=0, le=50000)
-    quantity: int | None = Field(default=None)
+    price: int | None = Field(default=None, gt=0, le=50000)
+    quantity: int | None  = Field(default=None, ge=0, le=20)
+    facilities_ids: list[int] | None = None
+
+
+class RoomPatchSchema(BaseModel):
+    hotel_id: int | None = None
+    id: int
+    title: str | None = Field(default=None, max_length=100)
+    description: str | None = Field(default=None, max_length=400)
+    price: int | None = Field(default=None, gt=0, le=50000)
+    quantity: int | None  = Field(default=None, ge=0, le=20)

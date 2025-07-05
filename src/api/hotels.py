@@ -91,7 +91,11 @@ async def patch_hotel(
         hotel_data: HotelPATCHSchema,
         db: DBDep
 ):
-    await db.hotels.update_particular(data=hotel_data, exclude_unset=True, id=hotel_id)
+    await db.hotels.update_particular(
+        data=hotel_data,
+        exclude_unset=True,
+        id=hotel_id
+    )
     await db.commit()
     return {"success": True, "message": "Hotel updated successfully"}
 
