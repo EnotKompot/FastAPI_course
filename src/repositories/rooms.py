@@ -2,10 +2,11 @@ from datetime import date
 
 from fastapi import HTTPException
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.orm import joinedload
 
+from src.repositories.mappers.mappers import RoomDataMapper, RoomWithRelsDataMapper
 from src.repositories.utils import rooms_ids_for_booking
-from src.schemas.rooms import RoomSchema, RoomPatchSchema, RoomWithRels
+from src.schemas.rooms import RoomPatchSchema
 from src.models.rooms import RoomsORM
 from src.repositories.base import BaseRepository
 from src.repositories.hotels import HotelsRepository
@@ -13,7 +14,7 @@ from src.repositories.hotels import HotelsRepository
 
 class RoomsRepository(BaseRepository):
     model = RoomsORM
-    schema = RoomSchema
+    mapper = RoomDataMapper
 
     async def is_hotel_exist(self, hotel_id: int) -> None:
         '''
@@ -43,7 +44,7 @@ class RoomsRepository(BaseRepository):
             .filter(RoomsORM.id.in_(awailable_rooms))
         )
         result = await self.session.execute(query)
-        return [RoomWithRels.model_validate(model) for model in result.unique().scalars().all()]
+        return [RoomWithRelsDataMapper.map_to_domain_entity(model) for model in result.unique().scalars().all()]
 
 
     async def get_one_or_none(self, **filter_by):
@@ -56,7 +57,7 @@ class RoomsRepository(BaseRepository):
         model = result.scalars().unique().one_or_none()
         if model is None:
             return model
-        return RoomWithRels.model_validate(model)
+        return self.mapper.map_to_domain_entity(model)
 
 
     async def add(self, data):
