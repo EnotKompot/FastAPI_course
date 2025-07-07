@@ -5,6 +5,7 @@ from fastapi_cache.decorator import cache
 from src.init import redis_manager
 from src.schemas.facilities import FacilityAddSchema
 from src.api.dependencies import DBDep
+from tasks.tasks import test_task
 
 router = APIRouter(
     prefix="/facilities",
@@ -31,6 +32,8 @@ async def get_all_facilities(
     #
     #     facilities = json.loads(facilities_from_cache)
     # return facilities
+    test_task().delay()
+
     return await db.facilities.get_all()
 
 
