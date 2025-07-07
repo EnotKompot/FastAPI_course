@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Response
+from fastapi_cache.decorator import cache
 
 from src.api.dependencies import UserIDDep, DBDep
 from src.schemas.auth import UserRequestAdd
@@ -41,6 +42,7 @@ async def login_user(
     return {"access_token": access_token}
 
 @router.get('/me')
+@cache(expire=60)
 async def get_me(
         user_id: UserIDDep,
         db: DBDep

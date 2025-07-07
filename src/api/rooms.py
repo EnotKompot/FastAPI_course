@@ -1,6 +1,7 @@
 from datetime import date
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi_cache.decorator import cache
 
 from src.repositories.utils import update_room_facilities
 from src.schemas.facilities import RoomFacilityAddSchema
@@ -15,6 +16,7 @@ router = APIRouter(
 
 
 @router.get("/{hotel_id}/rooms")
+@cache(expire=60)
 async def get_rooms(
         # pagination: PaginationDep,
         db: DBDep,
@@ -37,6 +39,7 @@ async def get_rooms(
 
 
 @router.get("/{hotel_id}/rooms/{room_id}")
+@cache(expire=60)
 async def get_room(
         hotel_id: int,
         room_id: int,
