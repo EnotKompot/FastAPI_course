@@ -24,7 +24,7 @@ class AuthService:
     def hash_password(self, password: str) -> str:
         return self.pwd_context.hash(password)
 
-    def encode_token(self, token: str) -> dict:
+    def decode_token(self, token: str) -> dict:
         try:
             return jwt.decode(
                 token,
