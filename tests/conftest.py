@@ -1,11 +1,16 @@
+import json
+from pathlib import Path
+
 import pytest
 from httpx import AsyncClient, ASGITransport
 
-from config import settings
+from schemas.rooms import RoomAddSchema
+from src.config import settings
+from src.schemas.hotels import HotelAddSchema
 from src.main import app
-from src.utils.database import BaseModel, engine_null_pool
+from src.utils.database import BaseModel, engine_null_pool, new_session_null_pool
+from src.utils.db_manager import DBManager
 from src.models import *
-
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -18,7 +23,7 @@ async def setup_database():
 
 
 @pytest.fixture(scope="session", autouse=True)
-async def test_register_user():
+async def test_register_user(setup_database):
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
@@ -32,3 +37,27 @@ async def test_register_user():
         )
 
     assert response.json() == {"success": True}
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def test_add_hotels_mock_data(setup_database):
+    current_dir = Path(__file__).parent
+    file_path = current_dir / "mock_hotels.json"
+    with open(file_path, "r", encoding="utf-8") as mock_data:
+        hotels_data = json.load(mock_data)
+    async with DBManager(session_factory=new_session_null_pool) as db:
+        for hotel in hotels_data:
+            await db.hotels.add(HotelAddSchema(**hotel))
+        await db.commit()
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def test_add_rooms_mock_data(test_add_hotels_mock_data):
+    current_dir = Path(__file__).parent
+    file_path = current_dir / "mock_rooms.json"
+    with open(file_path, "r", encoding="utf-8") as mock_data:
+        rooms_data = json.load(mock_data)
+    async with DBManager(session_factory=new_session_null_pool) as db:
+        for room in rooms_data:
+            await db.rooms.add(RoomAddSchema(**room))
+        await db.commit()
