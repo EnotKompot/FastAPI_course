@@ -13,6 +13,12 @@ from src.utils.db_manager import DBManager
 from src.models import *
 
 
+@pytest.fixture(scope='session')
+async def db() -> DBManager:
+    async with DBManager(session_factory=new_session_null_pool) as db:
+        yield db
+
+
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database():
     assert settings.MODE == "TEST"
@@ -22,42 +28,45 @@ async def setup_database():
         await conn.run_sync(BaseModel.metadata.create_all)
 
 
+@pytest.fixture(scope="session")
+async def ac() -> AsyncClient:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        yield ac
+
+
 @pytest.fixture(scope="session", autouse=True)
-async def test_register_user(setup_database):
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as ac:
-        response = await ac.post(
-            "/auth/register",
-            json={
-                "email": "kot@pes.ru",
-                "nickname": "kot",
-                "password": "password12345",
-            }
-        )
+async def test_register_user(setup_database, ac):
+    response = await ac.post(
+        "/auth/register",
+        json={
+            "email": "kot@pes.ru",
+            "nickname": "kot",
+            "password": "password12345",
+        }
+    )
 
     assert response.json() == {"success": True}
 
 
 @pytest.fixture(scope="session", autouse=True)
-async def test_add_hotels_mock_data(setup_database):
+async def test_add_hotels_mock_data(setup_database, db):
     current_dir = Path(__file__).parent
     file_path = current_dir / "mock_hotels.json"
     with open(file_path, "r", encoding="utf-8") as mock_data:
         hotels_data = json.load(mock_data)
-    async with DBManager(session_factory=new_session_null_pool) as db:
-        for hotel in hotels_data:
-            await db.hotels.add(HotelAddSchema(**hotel))
-        await db.commit()
+
+    for hotel in hotels_data:
+        await db.hotels.add(HotelAddSchema.model_validate(hotel))
+    await db.commit()
 
 
 @pytest.fixture(scope="session", autouse=True)
-async def test_add_rooms_mock_data(test_add_hotels_mock_data):
+async def test_add_rooms_mock_data(test_add_hotels_mock_data, db):
     current_dir = Path(__file__).parent
     file_path = current_dir / "mock_rooms.json"
     with open(file_path, "r", encoding="utf-8") as mock_data:
         rooms_data = json.load(mock_data)
-    async with DBManager(session_factory=new_session_null_pool) as db:
-        for room in rooms_data:
-            await db.rooms.add(RoomAddSchema(**room))
-        await db.commit()
+
+    for room in rooms_data:
+        await db.rooms.add(RoomAddSchema.model_validate(room))
+    await db.commit()
