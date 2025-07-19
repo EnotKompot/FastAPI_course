@@ -13,8 +13,8 @@ router = APIRouter(
 )
 
 
-@router.get("/")
-@cache(expire=60)
+@router.get("")
+# @cache(expire=60)
 async def get_all_facilities(
         db: DBDep
 ):
@@ -32,13 +32,13 @@ async def get_all_facilities(
     #
     #     facilities = json.loads(facilities_from_cache)
     # return facilities
-    test_task().delay()
+    # test_task().delay()
 
     return await db.facilities.get_all()
 
 
 @router.get("/{facility_id}")
-@cache(expire=60)
+# @cache(expire=60)
 async def get_facility(
         db: DBDep,
         facility_id: int
@@ -50,7 +50,7 @@ async def get_facility(
     return query
 
 
-@router.post("/")
+@router.post("")
 async def add_facility(
         db: DBDep,
         facility: FacilityAddSchema = Body(openapi_examples={

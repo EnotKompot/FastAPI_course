@@ -3,27 +3,36 @@ from pathlib import Path
 
 import pytest
 from httpx import AsyncClient, ASGITransport
+from typing_extensions import override
 
-from schemas.rooms import RoomAddSchema
+from src.api.dependencies import get_db
+from src.schemas.rooms import RoomAddSchema
 from src.config import settings
 from src.schemas.hotels import HotelAddSchema
 from src.main import app
-from src.utils.database import BaseModel, engine_null_pool, new_session_null_pool
+from src.utils.database import BaseModel, engine, new_session
 from src.utils.db_manager import DBManager
 from src.models import *
 
 
 @pytest.fixture(scope='session')
 async def db() -> DBManager:
-    async with DBManager(session_factory=new_session_null_pool) as db:
+    async with DBManager(session_factory=new_session) as db:
         yield db
+
+
+async def get_db_null_pool() -> DBManager:
+    async with DBManager(session_factory=new_session) as db:
+        yield db
+
+# app.dependency_overrides[get_db()] = get_db_null_pool
 
 
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database():
     assert settings.MODE == "TEST"
 
-    async with engine_null_pool.begin() as conn:
+    async with engine.begin() as conn:
         await conn.run_sync(BaseModel.metadata.drop_all)
         await conn.run_sync(BaseModel.metadata.create_all)
 
