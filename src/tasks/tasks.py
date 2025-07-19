@@ -1,19 +1,11 @@
 import asyncio
-from time import sleep
 
 from PIL import Image
 import os
 
-
 from src.tasks.celery_app import celery_instance
 from src.utils.database import new_session_null_pool
 from src.utils.db_manager import DBManager
-
-
-@celery_instance.task
-def test_task():
-    sleep(5)
-    print("Task is done")
 
 
 @celery_instance.task

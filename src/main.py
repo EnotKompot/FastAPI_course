@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
+from config import settings
+
 
 from contextlib import asynccontextmanager
 
@@ -28,6 +30,7 @@ async def lifespan(app: FastAPI):
     yield
     # Due to app end/restart
     await redis_manager.close()
+
 
 app = FastAPI(lifespan=lifespan)
 

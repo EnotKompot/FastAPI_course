@@ -1,11 +1,8 @@
-import json
 from fastapi import APIRouter, Body, HTTPException
 from fastapi_cache.decorator import cache
 
-from src.init import redis_manager
 from src.schemas.facilities import FacilityAddSchema
 from src.api.dependencies import DBDep
-from tasks.tasks import test_task
 
 router = APIRouter(
     prefix="/facilities",
@@ -14,7 +11,7 @@ router = APIRouter(
 
 
 @router.get("")
-# @cache(expire=60)
+@cache(expire=60)
 async def get_all_facilities(
         db: DBDep
 ):
@@ -32,13 +29,12 @@ async def get_all_facilities(
     #
     #     facilities = json.loads(facilities_from_cache)
     # return facilities
-    # test_task().delay()
 
     return await db.facilities.get_all()
 
 
 @router.get("/{facility_id}")
-# @cache(expire=60)
+@cache(expire=60)
 async def get_facility(
         db: DBDep,
         facility_id: int

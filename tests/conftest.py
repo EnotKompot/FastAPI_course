@@ -1,11 +1,13 @@
 import json
+from unittest import mock
+
+mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
+
 from pathlib import Path
 
 import pytest
 from httpx import AsyncClient, ASGITransport
-from typing_extensions import override
 
-from src.api.dependencies import get_db
 from src.schemas.rooms import RoomAddSchema
 from src.config import settings
 from src.schemas.hotels import HotelAddSchema
@@ -13,6 +15,7 @@ from src.main import app
 from src.utils.database import BaseModel, engine, new_session
 from src.utils.db_manager import DBManager
 from src.models import *
+
 
 
 @pytest.fixture(scope='session')
