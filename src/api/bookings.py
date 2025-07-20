@@ -35,18 +35,21 @@ async def get_my_bookings(
              summary="Добавляет бронирование для текущего пользователя"
              )
 async def add_booking(
-        booking: BookingAddRequestSchema,
+        user_id: UserIDDep,
         db: DBDep,
-        user_id: UserIDDep
+        booking_data: BookingAddRequestSchema,
 ):
-    room_data = await db.rooms.get_one_or_none(id=booking.room_id)
-    price = room_data.price * (booking.date_to - booking.date_from).days
-    _booking = BookingAddSchema(
-        price=price,
+    room = await db.rooms.get_one_or_none(id=booking_data.room_id)
+    hotel = await db.hotels.get_one_or_none(id=room.hotel_id)
+    room_price: int = room.price
+    _booking_data = BookingAddSchema(
         user_id=user_id,
-        **booking.model_dump(exclude_unset=True)
+        price=room_price,
+        **booking_data.model_dump(),
     )
-    add_stmt = await db.bookings.add(_booking)
+    booking = await db.bookings.add_booking(
+        _booking_data,
+        hotel_id=hotel.id
+    )
     await db.commit()
-    return {"success": True, "data": add_stmt}
-
+    return {"success": True, "data": booking}

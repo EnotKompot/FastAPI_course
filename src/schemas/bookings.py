@@ -3,13 +3,17 @@ from pydantic import BaseModel, ConfigDict
 
 
 class BookingAddRequestSchema(BaseModel):
+    hotel_id: int
     room_id: int
     date_from: date
     date_to: date
 
 
-class BookingAddSchema(BookingAddRequestSchema):
+class BookingAddSchema(BaseModel):
     user_id: int
+    room_id: int
+    date_from: date
+    date_to: date
     price: int
 
 

@@ -1,6 +1,7 @@
 import json
 from unittest import mock
 
+
 mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
 
 from pathlib import Path
@@ -17,16 +18,17 @@ from src.utils.db_manager import DBManager
 from src.models import *
 
 
-
 @pytest.fixture(scope='session')
+async def get_db_null_pool() -> DBManager:
+    async with DBManager(session_factory=new_session) as db:
+        yield db
+
+
+@pytest.fixture(scope="session")
 async def db() -> DBManager:
     async with DBManager(session_factory=new_session) as db:
         yield db
 
-
-async def get_db_null_pool() -> DBManager:
-    async with DBManager(session_factory=new_session) as db:
-        yield db
 
 # app.dependency_overrides[get_db()] = get_db_null_pool
 
@@ -47,10 +49,10 @@ async def ac() -> AsyncClient:
 
 
 @pytest.fixture(scope="session", autouse=True)
-async def test_register_user(setup_database, ac):
+async def test_register_user(ac, setup_database):
     response = await ac.post(
         "/auth/register",
-        json={
+        json= {
             "email": "kot@pes.ru",
             "nickname": "kot",
             "password": "password12345",
@@ -58,6 +60,20 @@ async def test_register_user(setup_database, ac):
     )
 
     assert response.json() == {"success": True}
+
+
+@pytest.fixture(scope="session")
+async def authenticated_ac(ac, test_register_user):
+    await ac.post(
+        "/auth/login",
+        json={
+            "email": "kot@pes.ru",
+            "nickname": "kot",
+            "password": "password12345",
+        }
+    )
+    assert ac.cookies["access_token"] is not None
+    yield ac
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -82,3 +98,5 @@ async def test_add_rooms_mock_data(test_add_hotels_mock_data, db):
     for room in rooms_data:
         await db.rooms.add(RoomAddSchema.model_validate(room))
     await db.commit()
+
+
