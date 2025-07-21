@@ -35,7 +35,7 @@ async def login_user(
     if user is None:
         raise HTTPException(status_code=401, detail=f'User with email {data.email} does not exist.')
     if not AuthService().verify_password(data.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail=f'Incorrect password.')
+        raise HTTPException(status_code=401, detail='Incorrect password.')
 
     access_token = AuthService().create_access_token({"user_id": user.id})
     response.set_cookie("access_token", access_token)

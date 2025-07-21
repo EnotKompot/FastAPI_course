@@ -2,7 +2,7 @@ from pydantic import EmailStr
 from sqlalchemy import insert, select
 
 from src.repositories.mappers.mappers import UserDataMapper, UserWithHashPassDataMapper
-from src.schemas.auth import User, UserAdd, UserRequestAdd, UserWithHashedPassword
+from src.schemas.auth import UserAdd, UserRequestAdd
 from src.models.users import UsersORM
 from src.repositories.base import BaseRepository
 from src.services.auth import AuthService

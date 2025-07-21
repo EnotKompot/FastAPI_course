@@ -23,7 +23,7 @@ class RoomsRepository(BaseRepository):
         '''
         result = await HotelsRepository(self.session).get_one_or_none(id=hotel_id)
         if not result:
-            raise HTTPException(status_code=404, detail=f"Hotel ID not found")
+            raise HTTPException(status_code=404, detail="Hotel ID not found")
 
 
     async def get_filtered_by_time(

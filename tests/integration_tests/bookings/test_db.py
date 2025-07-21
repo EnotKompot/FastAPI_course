@@ -1,6 +1,5 @@
 from datetime import date
 
-from schemas.bookings import BookingSchema
 from src.schemas.bookings import BookingAddSchema
 
 

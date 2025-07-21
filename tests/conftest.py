@@ -1,3 +1,4 @@
+#ruff: noqa: E402
 import json
 from unittest import mock
 
@@ -9,13 +10,13 @@ from pathlib import Path
 import pytest
 from httpx import AsyncClient, ASGITransport
 
-from src.schemas.rooms import RoomAddSchema
 from src.config import settings
-from src.schemas.hotels import HotelAddSchema
-from src.main import app
 from src.utils.database import BaseModel, engine, new_session
+from src.models import *    # noqa
+from src.main import app
 from src.utils.db_manager import DBManager
-from src.models import *
+from src.schemas.rooms import RoomAddSchema
+from src.schemas.hotels import HotelAddSchema
 
 
 @pytest.fixture(scope='session')

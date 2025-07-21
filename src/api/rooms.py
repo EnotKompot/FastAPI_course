@@ -96,7 +96,7 @@ async def update_room(
         hotel_id=hotel_id,
         **room_data.model_dump()
     )
-    room = await db.rooms.update(
+    await db.rooms.update(
         data=_room,
         hotel_id=hotel_id,
         id=room_id,

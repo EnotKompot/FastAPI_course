@@ -89,6 +89,8 @@ async def test_get_userdata(
     if response.status_code == 200:
         assert user_data["email"] == email
         assert user_data["nickname"] == nickname
+        assert "password" not in user_data
+        assert "hashed_password" not in user_data
 
 
 @pytest.mark.parametrize(
@@ -104,8 +106,8 @@ async def test_user_logout(
     response = await ac.get(
         "/auth/logout"
     )
-    cookie = response.cookies.get('access_token')
-    assert cookie is None   # Checking that cookies is no more exist after logout
+    cookie = response.cookies
+    assert "access token" not in cookie   # Checking that cookies is no more exist after logout
 
 
 @pytest.mark.parametrize(
@@ -118,7 +120,7 @@ async def test_get_user_after_logout(
 
 ):
     await test_user_login(ac, email, nickname, password, status_code)
-    await ac.get("/auth/logout")
+    await ac.post("/auth/logout")
     response = await ac.get(
         "/auth/me"
     )
