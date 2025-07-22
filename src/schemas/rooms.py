@@ -33,7 +33,7 @@ class RoomPatchRequestSchema(BaseModel):
     title: str | None = Field(default=None, max_length=100)
     description: str | None = Field(default=None, max_length=400)
     price: int | None = Field(default=None, gt=0, le=50000)
-    quantity: int | None  = Field(default=None, ge=0, le=20)
+    quantity: int | None = Field(default=None, ge=0, le=20)
     facilities_ids: list[int] | None = None
 
 
@@ -43,4 +43,4 @@ class RoomPatchSchema(BaseModel):
     title: str | None = Field(default=None, max_length=100)
     description: str | None = Field(default=None, max_length=400)
     price: int | None = Field(default=None, gt=0, le=50000)
-    quantity: int | None  = Field(default=None, ge=0, le=20)
+    quantity: int | None = Field(default=None, ge=0, le=20)

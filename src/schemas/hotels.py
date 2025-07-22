@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field
 
 
-
 class HotelAddSchema(BaseModel):
     title: str
     location: str

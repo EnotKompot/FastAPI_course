@@ -1,12 +1,7 @@
 async def test_facilities_api(ac):
     url = "/facilities"
     # Добавляем удобство
-    request_add = await ac.post(
-        url=url,
-        json={
-            "name": "Интернет"
-        }
-    )
+    request_add = await ac.post(url=url, json={"name": "Интернет"})
     assert request_add.status_code == 200
 
     # Получаем все удобства

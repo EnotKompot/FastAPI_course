@@ -12,10 +12,12 @@ class UserAdd(BaseModel):
     nickname: str
     hashed_password: str
 
+
 class User(BaseModel):
     id: int
     nickname: str
     email: str
+
 
 class UserWithHashedPassword(User):
     email: EmailStr

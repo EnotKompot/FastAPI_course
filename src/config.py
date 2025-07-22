@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 
     @property
     def REDIS_URL(self):
-        return f'redis://{self.REDIS_HOST}:{self.REDIS_PORT}'
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
 
     @property
     def DB_URL(self):
@@ -27,9 +27,7 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int
 
-    model_config = SettingsConfigDict(
-        env_file=".env"
-    )
+    model_config = SettingsConfigDict(env_file=".env")
 
 
 settings = Settings()

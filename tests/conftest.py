@@ -1,4 +1,4 @@
-#ruff: noqa: E402
+# ruff: noqa: E402
 import json
 from unittest import mock
 
@@ -12,14 +12,14 @@ from httpx import AsyncClient, ASGITransport
 
 from src.config import settings
 from src.utils.database import BaseModel, engine, new_session
-from src.models import *    # noqa
+from src.models import *  # noqa
 from src.main import app
 from src.utils.db_manager import DBManager
 from src.schemas.rooms import RoomAddSchema
 from src.schemas.hotels import HotelAddSchema
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 async def get_db_null_pool() -> DBManager:
     async with DBManager(session_factory=new_session) as db:
         yield db
@@ -53,11 +53,11 @@ async def ac() -> AsyncClient:
 async def test_register_user(ac, setup_database):
     response = await ac.post(
         "/auth/register",
-        json= {
+        json={
             "email": "kot@pes.ru",
             "nickname": "kot",
             "password": "password12345",
-        }
+        },
     )
 
     assert response.json() == {"success": True}
@@ -71,7 +71,7 @@ async def authenticated_ac(ac, test_register_user):
             "email": "kot@pes.ru",
             "nickname": "kot",
             "password": "password12345",
-        }
+        },
     )
     assert ac.cookies["access_token"] is not None
     yield ac
@@ -99,5 +99,3 @@ async def test_add_rooms_mock_data(test_add_hotels_mock_data, db):
     for room in rooms_data:
         await db.rooms.add(RoomAddSchema.model_validate(room))
     await db.commit()
-
-

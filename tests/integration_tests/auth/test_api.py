@@ -12,21 +12,22 @@ test_cases = {
         ("test6mailcom", "test_user6", "qwerty", 422),
         ("test7mail@.com", "test_user7", "password1", 422),
         ("test8.com", "test_user8", "QqWwEeRrTtYy", 422),
-    ]
+    ],
 }
 
 test_cases_validated = {
     "params": "email, nickname, password, status_code",
-    "values": list(filter(lambda x: x[-1] == 200, test_cases["values"]))
+    "values": list(filter(lambda x: x[-1] == 200, test_cases["values"])),
 }
 
-@pytest.mark.parametrize(
-    test_cases["params"],
-    test_cases["values"]
-)
+
+@pytest.mark.parametrize(test_cases["params"], test_cases["values"])
 async def test_user_register(
-        ac,
-        email, nickname, password, status_code,
+    ac,
+    email,
+    nickname,
+    password,
+    status_code,
 ):
     response = await ac.post(
         url="/auth/register",
@@ -34,7 +35,7 @@ async def test_user_register(
             "email": email,
             "nickname": nickname,
             "password": password,
-        }
+        },
     )
 
     assert response.status_code == status_code
@@ -43,13 +44,13 @@ async def test_user_register(
         assert answer["success"] is True
 
 
-@pytest.mark.parametrize(
-    test_cases_validated["params"],
-    test_cases_validated["values"]
-)
+@pytest.mark.parametrize(test_cases_validated["params"], test_cases_validated["values"])
 async def test_user_login(
-        ac,
-        email, nickname, password, status_code,
+    ac,
+    email,
+    nickname,
+    password,
+    status_code,
 ):
     response = await ac.post(
         url="/auth/login",
@@ -57,33 +58,30 @@ async def test_user_login(
             "email": email,
             "nickname": nickname,
             "password": password,
-
-        }
+        },
     )
     assert response.status_code == status_code
 
     cookies = ""
     if status_code == 200:
         answer = response.json()
-        cookies = response.cookies['access_token']
+        cookies = response.cookies["access_token"]
         assert cookies
         assert isinstance(cookies, str)
         assert answer["access_token"] == cookies
     return {"cookies": cookies}
 
 
-@pytest.mark.parametrize(
-    test_cases_validated["params"],
-    test_cases_validated["values"]
-)
+@pytest.mark.parametrize(test_cases_validated["params"], test_cases_validated["values"])
 async def test_get_userdata(
-        ac,
-        email, nickname, password, status_code,
+    ac,
+    email,
+    nickname,
+    password,
+    status_code,
 ):
     await test_user_login(ac, email, nickname, password, status_code)
-    response = await ac.get(
-        "/auth/me"
-    )
+    response = await ac.get("/auth/me")
     user_data = response.json()
     assert response.status_code == status_code
     if response.status_code == 200:
@@ -93,35 +91,30 @@ async def test_get_userdata(
         assert "hashed_password" not in user_data
 
 
-@pytest.mark.parametrize(
-    test_cases_validated["params"],
-    test_cases_validated["values"]
-)
+@pytest.mark.parametrize(test_cases_validated["params"], test_cases_validated["values"])
 async def test_user_logout(
-        ac,
-        email, nickname, password, status_code,
+    ac,
+    email,
+    nickname,
+    password,
+    status_code,
 ):
     response = await test_user_login(ac, email, nickname, password, status_code)
-    assert response.get("cookies") is not None # Checking that cookies exists after login
-    response = await ac.get(
-        "/auth/logout"
-    )
+    assert response.get("cookies") is not None  # Checking that cookies exists after login
+    response = await ac.get("/auth/logout")
     cookie = response.cookies
-    assert "access token" not in cookie   # Checking that cookies is no more exist after logout
+    assert "access token" not in cookie  # Checking that cookies is no more exist after logout
 
 
-@pytest.mark.parametrize(
-    test_cases_validated["params"],
-    test_cases_validated["values"]
-)
+@pytest.mark.parametrize(test_cases_validated["params"], test_cases_validated["values"])
 async def test_get_user_after_logout(
-        ac,
-        email, nickname, password, status_code,
-
+    ac,
+    email,
+    nickname,
+    password,
+    status_code,
 ):
     await test_user_login(ac, email, nickname, password, status_code)
     await ac.post("/auth/logout")
-    response = await ac.get(
-        "/auth/me"
-    )
+    response = await ac.get("/auth/me")
     assert response.status_code == 401

@@ -30,6 +30,7 @@ class UserDataMapper(DataMapper):
     db_model = UsersORM
     schema = User
 
+
 class UserWithHashPassDataMapper(DataMapper):
     db_model = UsersORM
     schema = UserWithHashedPassword
