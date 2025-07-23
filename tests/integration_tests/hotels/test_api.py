@@ -7,3 +7,6 @@ async def test_get_hotels(ac):
         },
     )
     assert response.status_code == 200
+    response_json = response.json()
+    assert response_json["success"] == True
+    assert len(response_json["data_list"]) > 0

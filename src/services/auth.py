@@ -1,9 +1,8 @@
 from datetime import datetime, timezone, timedelta
-from fastapi import HTTPException
 import jwt
 from passlib.context import CryptContext
 
-from exceptions import InvalidTokenException
+from src.exceptions import InvalidTokenException
 from src.config import settings
 
 

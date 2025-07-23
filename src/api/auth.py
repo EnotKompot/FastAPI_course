@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response
 from fastapi_cache.decorator import cache
 
-from exceptions import ObjectNotFoundException, UserNotFoundException
+from src.exceptions import ObjectNotFoundException, UserNotFoundException
 from src.api.dependencies import UserIDDep, DBDep
 from src.schemas.auth import UserRequestAdd
 from src.services.auth import AuthService

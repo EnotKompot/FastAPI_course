@@ -1,7 +1,8 @@
 from datetime import date
 
 from sqlalchemy import select
-from sqlalchemy.orm import joinedload
+from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import joinedload, selectinload
 
 from src.exceptions import HotelNotFoundException, ObjectNotFoundException, DatefromOverDatetoException
 from src.schemas.rooms import RoomPatchSchema
@@ -37,7 +38,7 @@ class RoomsRepository(BaseRepository):
 
         query = (
             select(self.model)
-            .options(joinedload(self.model.facilities))
+            .options(selectinload(self.model.facilities))
             .filter(RoomsORM.id.in_(awailable_rooms))
         )
         result = await self.session.execute(query)
@@ -45,6 +46,13 @@ class RoomsRepository(BaseRepository):
             RoomWithRelsDataMapper.map_to_domain_entity(model)
             for model in result.unique().scalars().all()
         ]
+
+
+    async def get_one_with_rels(self, **filter_by):
+        query = (select(self.model).options(selectinload(self.model.facilities)).filter_by(**filter_by))
+        result = await self.session.execute(query)
+        model = result.scalar_one()
+        return RoomWithRelsDataMapper.map_to_domain_entity(model)
 
 
     async def add(self, data):
