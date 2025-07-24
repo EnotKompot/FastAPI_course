@@ -1,9 +1,10 @@
 from fastapi import APIRouter
 from fastapi_cache.decorator import cache
 
-from src.services.bookings import BookingsService
-from src.schemas.bookings import BookingAddRequestSchema
 from src.api.dependencies import DBDep, UserIDDep
+from src.schemas.bookings import BookingAddRequestSchema
+from src.services.bookings import BookingsService
+from exceptions import NoFreeRoomHTTPException, NoFreeRoomException
 
 router = APIRouter(prefix="/bookings", tags=["Бронирования"])
 
@@ -28,5 +29,8 @@ async def add_booking(
     db: DBDep,
     booking_data: BookingAddRequestSchema,
 ):
-    new_booking = await BookingsService(db).add_new_booking(user_id, booking_data)
+    try:
+        new_booking = await BookingsService(db).add_new_booking(user_id, booking_data)
+    except NoFreeRoomException:
+        raise NoFreeRoomHTTPException
     return {"success": True, "data": new_booking}

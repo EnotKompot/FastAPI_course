@@ -1,9 +1,8 @@
-from fastapi import HTTPException
 from datetime import date
 
 from sqlalchemy import select
 
-from exceptions import DatefromOverDatetoException
+# from src.exceptions_utils import validate_datefrom_dateto
 from src.exceptions import NoFreeRoomException
 from src.schemas.bookings import BookingAddSchema
 from src.models.bookings import BookingsORM
@@ -25,15 +24,14 @@ class BookingsRepository(BaseRepository):
 
 
     async def add_booking(self, data: BookingAddSchema, hotel_id: int):
-        if data.date_from > data.date_to:
-            raise DatefromOverDatetoException
+        # validate_datefrom_dateto(date_from=data.date_from, date_to=data.date_to)
         rooms_ids_to_get = rooms_ids_for_booking(
             date_from=data.date_from,
             date_to=data.date_to,
             hotel_id=hotel_id,
         )
         rooms_ids_to_book_res = await self.session.execute(rooms_ids_to_get)
-        rooms_ids_to_book: list[int] = rooms_ids_to_book_res.scalars().all()
+        rooms_ids_to_book = rooms_ids_to_book_res.scalars().all()
 
         if data.room_id not in rooms_ids_to_book:
             raise NoFreeRoomException

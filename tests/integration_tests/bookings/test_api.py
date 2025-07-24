@@ -13,7 +13,7 @@ from src.utils.db_manager import DBManager
         (1, 1, "2024-12-12", "2024-12-27", 200),
         (1, 1, "2024-12-13", "2024-12-28", 200),
         (1, 1, "2024-12-14", "2024-12-29", 200),
-        (1, 1, "2024-12-15", "2024-12-29", 400),
+        (1, 1, "2024-12-15", "2024-12-29", 404),
         (1, 1, "2024-12-30", "2024-12-31", 200),
     ],
 )
@@ -81,4 +81,5 @@ async def test_add_and_get_bookings(
     bookings = await authenticated_ac.get(
         "/bookings/me",
     )
-    assert len(bookings.json()) == bookings_count
+    res = bookings.json()
+    assert len(res["data_list"]) == bookings_count
